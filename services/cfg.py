@@ -1,6 +1,6 @@
-from enum import Enum
+from enum import Enum, IntEnum, StrEnum
 
-class RegIndex(Enum):
+class RegIndex(IntEnum):
     NAME = 0
     INN = 1
     KPP = 2
@@ -21,7 +21,7 @@ class RegIndex(Enum):
     OKATO_TERRITORY = 17
 
 
-class TempCell(Enum):
+class TempCell(StrEnum):
     NAME = 'E6'
     LEGAL_ADDRESS = 'E7'
     POSTMAIL_ADDRESS = 'E8'

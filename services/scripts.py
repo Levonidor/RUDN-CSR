@@ -6,20 +6,19 @@ import os.path
 from time import sleep
 from sys import exit
 
-def Startup_Check():
+def startup_check():
         print('Запуск программы...')
         sleep(0.25)
         print('Проверка файлов...\n')
         sleep(0.25)
-        while True:
-            if os.path.exists('./import_files/template.xlsx'):
-                break
-            else:
-                print('Ошибка! Не обнаружен файл шаблона. Проверьте наличие файла "template.xlsx" в папке "import_files". \n Программа будет завершена через 10 секунд.')
-                sleep(12)
-                exit()
+        if os.path.exists('./import_files/template.xlsx'):
+            pass
+        else:
+            print('Ошибка! Не обнаружен файл шаблона. Проверьте наличие файла "template.xlsx" в папке "import_files". \n Программа будет завершена через 10 секунд.')
+            sleep(12)
+            exit()
 
-def Registry_Input():
+def registry_input():
         while True:
             registry_filename = str(input('Введите название файла реестра (Пример: somename): '))
             if os.path.exists(f'./import_files/{registry_filename}.xlsx'):
@@ -30,7 +29,7 @@ def Registry_Input():
         return registry_filename
 
 # Считывание реестра-excel в список [[компания1],[компания2]]
-def Registry_Read(filename: str) -> list:
+def registry_read(filename: str) -> list:
     book = openpyxl.open(f'./import_files/{filename}.xlsx',read_only=True)
     registry = book.active
     reg_list = []
@@ -49,7 +48,7 @@ def Registry_Read(filename: str) -> list:
 
 
 # Создает обложку для компании сответсвенно шаблону
-def Create_Companies_Sheet(companies: list, template_filename: str) -> None:
+def create_companies_sheet(companies: list, template_filename: str) -> None:
     print('<><><><><>\nНачало обработки файлов\n<><><><><>\n')
     book = openpyxl.open(f'./import_files/{template_filename}.xlsx')
     company_head_sheet = book.active
@@ -68,11 +67,8 @@ def Create_Companies_Sheet(companies: list, template_filename: str) -> None:
         company_head_sheet[TempCell.YEAR.value] = '2024'
         company_head_sheet[TempCell.OWNERSHIP_FORM.value] = 'Частная собственность' 
         company_head_sheet[TempCell.OKPO.value] = company[RegIndex.OKPO.value]
-
-        
         company_head_sheet[TempCell.OKVED_ACTIVITY_TYPE.value] = company[RegIndex.OKVED_ACTIVITY_TYPE.value]
         company_head_sheet[TempCell.OKATO_TERRITORY.value] = company[RegIndex.OKATO_TERRITORY.value]
-
         company_head_sheet[TempCell.INN.value] = company[RegIndex.INN.value]
         company_head_sheet[TempCell.KPP.value] = company[RegIndex.KPP.value]
         company_head_sheet[TempCell.OGRN.value] = company[RegIndex.OGRN.value]
