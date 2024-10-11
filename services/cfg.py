@@ -1,4 +1,4 @@
-from enum import Enum, IntEnum, StrEnum
+from enum import IntEnum, Enum, StrEnum
 
 class RegIndex(IntEnum):
     NAME = 0

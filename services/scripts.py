@@ -1,10 +1,9 @@
 import openpyxl
 from .cfg import RegIndex,TempCell,Abbreviations,Abbreviations_Decryption
-from math import floor
-import datetime
 import os.path
 from time import sleep
 from sys import exit
+from progress.bar import Bar
 
 def startup_check():
         print('Запуск программы...')
@@ -17,6 +16,10 @@ def startup_check():
             print('Ошибка! Не обнаружен файл шаблона. Проверьте наличие файла "template.xlsx" в папке "import_files". \n Программа будет завершена через 10 секунд.')
             sleep(12)
             exit()
+        if not os.path.isdir('./print_files'):
+            os.mkdir('./print_files')
+        if not os.path.isdir('./export_files'):
+            os.mkdir('./export_files')
 
 def registry_input():
         while True:
@@ -46,41 +49,65 @@ def registry_read(filename: str) -> list:
     sleep(0.2)
     return reg_list
 
-
+#!!! TempCell(Enum) надо везде вписать .value
 # Создает обложку для компании сответсвенно шаблону
 def create_companies_sheet(companies: list, template_filename: str) -> None:
     print('<><><><><>\nНачало обработки файлов\n<><><><><>\n')
+    working_time = Bar('Обработка файлов',max=len(companies),suffix='%(percent).1f%% - %(eta)ds')
     book = openpyxl.open(f'./import_files/{template_filename}.xlsx')
     company_head_sheet = book.active
-    companies_percent_count = floor(len(companies)/100)
-    companies_count,percent_of_creating = 0,0
-    time = datetime.datetime.now().replace(microsecond=0)
     for company in companies:
-        company_name = (company[RegIndex.NAME.value].split())
+        company_name = (company[RegIndex.NAME].split())
         if company_name[0] in Abbreviations:
-            company_head_sheet[TempCell.NAME.value] = Abbreviations_Decryption[(Abbreviations.index(company_name[0]))]+' '+''.join(company_name[1:])
+            company_head_sheet[TempCell.NAME] = Abbreviations_Decryption[(Abbreviations.index(company_name[0]))]+' '+''.join(company_name[1:])
         else:
-            company_head_sheet[TempCell.NAME.value] = company[RegIndex.NAME.value]
-        company_head_sheet[TempCell.LEGAL_ADDRESS.value] = company[RegIndex.ADDRESS.value]
-        company_head_sheet[TempCell.POSTMAIL_ADDRESS.value] = company[RegIndex.ADDRESS.value]
-        company_head_sheet[TempCell.ADMINISTRATOR.value] = f'{company[RegIndex.SURNAME.value]} {company[RegIndex.FIRSTNAME.value]} {company[RegIndex.PATRONYMIC.value]}'
-        company_head_sheet[TempCell.YEAR.value] = '2024'
-        company_head_sheet[TempCell.OWNERSHIP_FORM.value] = 'Частная собственность' 
-        company_head_sheet[TempCell.OKPO.value] = company[RegIndex.OKPO.value]
-        company_head_sheet[TempCell.OKVED_ACTIVITY_TYPE.value] = company[RegIndex.OKVED_ACTIVITY_TYPE.value]
-        company_head_sheet[TempCell.OKATO_TERRITORY.value] = company[RegIndex.OKATO_TERRITORY.value]
-        company_head_sheet[TempCell.INN.value] = company[RegIndex.INN.value]
-        company_head_sheet[TempCell.KPP.value] = company[RegIndex.KPP.value]
-        company_head_sheet[TempCell.OGRN.value] = company[RegIndex.OGRN.value]
-
-        fixed_name_for_save = (str(company[RegIndex.NAME.value])).replace('"','').replace('/',' ').replace('\\',' ').replace('<',' ').replace('>',' ') +' '+str(company[RegIndex.INN.value])
+            company_head_sheet[TempCell.NAME] = company[RegIndex.NAME]
+        company_head_sheet[TempCell.LEGAL_ADDRESS] = company[RegIndex.ADDRESS]
+        company_head_sheet[TempCell.POSTMAIL_ADDRESS] = company[RegIndex.ADDRESS]
+        company_head_sheet[TempCell.ADMINISTRATOR] = f'{company[RegIndex.SURNAME]} {company[RegIndex.FIRSTNAME]} {company[RegIndex.PATRONYMIC]}'
+        company_head_sheet[TempCell.YEAR] = '2024'
+        company_head_sheet[TempCell.OWNERSHIP_FORM] = 'Частная собственность' 
+        company_head_sheet[TempCell.OKPO] = company[RegIndex.OKPO.value]
+        company_head_sheet[TempCell.OKVED_ACTIVITY_TYPE] = company[RegIndex.OKVED_ACTIVITY_TYPE]
+        company_head_sheet[TempCell.OKATO_TERRITORY] = company[RegIndex.OKATO_TERRITORY]
+        company_head_sheet[TempCell.INN] = company[RegIndex.INN]
+        company_head_sheet[TempCell.KPP] = company[RegIndex.KPP]
+        company_head_sheet[TempCell.OGRN] = company[RegIndex.OGRN]
+        fixed_name_for_save = str(company[RegIndex.INN])
         book.save('./export_files/'+f'{fixed_name_for_save}.xlsx')
-        companies_count += 1
-        if companies_count%companies_percent_count==0 and companies_count/companies_percent_count!=100 and companies_count/companies_percent_count!=0:
-            percent_of_creating+=1
-            print(f'Выполнение: {percent_of_creating}%  |   Оставшееся время: {(datetime.datetime.now().replace(microsecond=0) - time)*(100-percent_of_creating)}')
-            time = datetime.datetime.now().replace(microsecond=0)
-    book.close()
-    print('<><><><><>\nВсе файлы успешно обработаны\nПроверьте папку export_files\n<><><><><>\n')
+        working_time.next()
+    working_time.finish()
 
-    
+
+    book.close()
+    print('\n<><><><><>\nВсе файлы успешно обработаны\nПроверьте папку export_files\n<><><><><>\n')
+
+
+
+def printing_fix():
+    if not os.path.isdir('./export_files/print'):
+        os.mkdir('./export_files/print')
+    print('<><><><><>\nНачало обработки файлов\n<><><><><>\n')
+    amount = 0
+    for filename in os.listdir('./print_files'):
+        amount += 1
+    working_time = Bar('Обработка файлов',max=amount,suffix='%(percent).1f%% - %(eta)ds')
+    for filename in os.listdir('./print_files'):
+        if os.path.splitext(filename)[1] in ['.xlsx','.xlsm','.xltx','.xltm']:
+            book = openpyxl.open(f'./print_files/{filename}')
+            sheet = book.active
+            sheet.column_dimensions['A'].width = 32
+            sheet.column_dimensions['B'].width = 15
+            for i in ['C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T','U','V','W','X','Y','Z','AA','AB']:
+                sheet.column_dimensions[i].width = 7
+            sheet.page_setup.orientation = sheet.ORIENTATION_LANDSCAPE
+            book.save('./export_files/print/'+f'{filename}')
+            book.close()
+            
+        else:
+            if not os.path.isdir('./export_files/print_errors'):
+                os.mkdir('./export_files/print_errors')
+            os.rename(f'./print_files/{filename}',f'./export_files/print_errors/{filename}')
+        working_time.next()
+    working_time.finish()
+    print('\n<><><><><>\nВсе файлы успешно обработаны\nПроверьте папку export_files -> print\nВсе файлы с не поддерживаемым типом файла находятся в export_files -> print_errors\n<><><><><>\n')
