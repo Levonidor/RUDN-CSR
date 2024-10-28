@@ -1,4 +1,4 @@
-from enum import IntEnum, Enum, StrEnum
+from enum import IntEnum, StrEnum
 
 class RegIndex(IntEnum):
     NAME = 0
@@ -19,6 +19,27 @@ class RegIndex(IntEnum):
     OGRN = 15
     OKVED_ACTIVITY_TYPE = 16
     OKATO_TERRITORY = 17
+
+class RegIndexGov(IntEnum):
+    NAME = 0
+    INN = 1
+    KPP = 2
+    ADDRESS = 3
+    SURNAME = 4
+    FIRSTNAME = 5
+    PATRONYMIC = 6
+    ACTIVITY_TYPE = 7
+    PHONES = 8
+    EMAIL = 9
+    REVENUE = 10
+    COST = 11
+    IDENTITYFICATOR = 12
+    OKPO = 13
+    PF_REG_NUM = 14
+    WEBSITE = 15
+    OGRN = 16
+    OKVED_ACTIVITY_TYPE = 17
+    OKATO_TERRITORY = 18
 
 
 class TempCell(StrEnum):
